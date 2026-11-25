@@ -7,7 +7,8 @@ import 'package:universal_nfc/universal_nfc.dart';
 /// template for supporting a brand-new reader type.
 class FakeBackend implements NfcBackend {
   final _c = StreamController<BackendEvent>.broadcast();
-  NfcWriteResult nextWrite = const NfcWriteResult.success(bytesUsed: 30, capacity: 144);
+  NfcWriteResult nextWrite =
+      const NfcWriteResult.success(bytesUsed: 30, capacity: 144);
   NfcData? lastWritten;
 
   void emit(BackendEvent e) => _c.add(e);
@@ -27,8 +28,8 @@ class FakeBackend implements NfcBackend {
   }
 
   @override
-  Future<NfcDiagnostics> diagnose() async =>
-      const NfcDiagnostics(platform: 'Fake', supported: true, serviceReachable: true);
+  Future<NfcDiagnostics> diagnose() async => const NfcDiagnostics(
+      platform: 'Fake', supported: true, serviceReachable: true);
   @override
   Future<void> dispose() => _c.close();
 }
@@ -147,7 +148,10 @@ void main() {
       parse: (f) => f.object('pass')!.list('days')!,
     ));
     backend.emit(const TagFields({
-      'pass': {'zone': 'A', 'days': [1, 2, 3]},
+      'pass': {
+        'zone': 'A',
+        'days': [1, 2, 3]
+      },
     }));
     await pumpEventQueue();
     expect(events.whereType<TagRead>().single.value, [1, 2, 3]);
@@ -161,7 +165,8 @@ void main() {
       expect(backend.lastWritten, isNull);
     });
 
-    test('writes and reports TagWritten; modelId is stored on the tag', () async {
+    test('writes and reports TagWritten; modelId is stored on the tag',
+        () async {
       backend
         ..emit(const ReaderAttached('R'))
         ..emit(const TagArrived());
@@ -211,7 +216,8 @@ void main() {
   });
 
   test('platforms without a backend fail soft', () async {
-    final stub = UnimplementedBackend(platform: 'Test OS', hint: 'Coming soon.');
+    final stub =
+        UnimplementedBackend(platform: 'Test OS', hint: 'Coming soon.');
     final other = UniversalNfc(backend: stub);
     expect(await other.isAvailable(), isFalse);
     expect(await other.diagnose().then((d) => d.supported), isFalse);

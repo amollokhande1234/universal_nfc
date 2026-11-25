@@ -38,8 +38,10 @@ class NfcDiagnostics {
     final b = StringBuffer()
       ..writeln('Platform           : $platform')
       ..writeln('Supported          : ${supported ? 'yes' : 'not yet'}')
-      ..writeln('NFC service        : ${serviceReachable ? 'reachable' : 'not reachable'}')
-      ..writeln('Readers found      : ${readers.isEmpty ? 'none' : readers.join(' | ')}')
+      ..writeln(
+          'NFC service        : ${serviceReachable ? 'reachable' : 'not reachable'}')
+      ..writeln(
+          'Readers found      : ${readers.isEmpty ? 'none' : readers.join(' | ')}')
       ..writeln('Selected reader    : ${selectedReader ?? '-'}')
       ..writeln('Reader profile     : ${selectedProfile ?? '-'}')
       ..writeln('Healthy            : ${healthy ? 'yes' : 'no'}');

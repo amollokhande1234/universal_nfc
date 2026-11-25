@@ -59,8 +59,10 @@ class ReaderProfile {
       buildWriteApdu?.call(page, data) ??
       [0xFF, 0xD6, 0x00, page, data.length, ...data];
 
-  static const acr1552 = ReaderProfile(id: 'acr1552', nameContains: ['ACR1552']);
-  static const acr1252 = ReaderProfile(id: 'acr1252', nameContains: ['ACR1252']);
+  static const acr1552 =
+      ReaderProfile(id: 'acr1552', nameContains: ['ACR1552']);
+  static const acr1252 =
+      ReaderProfile(id: 'acr1252', nameContains: ['ACR1252']);
   static const acr122u = ReaderProfile(id: 'acr122u', nameContains: ['ACR122']);
 
   /// Matches any reader with the standard PC/SC commands. Works with most

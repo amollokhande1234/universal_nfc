@@ -82,7 +82,8 @@ class PcscBackend implements NfcBackend {
 
   int get _scanEvery => math.max(
         1,
-        (readerScanInterval.inMilliseconds / pollInterval.inMilliseconds).ceil(),
+        (readerScanInterval.inMilliseconds / pollInterval.inMilliseconds)
+            .ceil(),
       );
 
   // ---------------------------------------------------------------- public
@@ -441,13 +442,15 @@ class PcscBackend implements NfcBackend {
       conn.close();
     }
 
-    _log('UID ${uid ?? '-'}; read ${bytes.length} bytes: ${NfcHex.encode(bytes)}');
+    _log(
+        'UID ${uid ?? '-'}; read ${bytes.length} bytes: ${NfcHex.encode(bytes)}');
 
     final raw = List<int>.unmodifiable(bytes);
     final result = codec.decode(bytes);
     final fields = result.fields;
     if (fields != null) {
-      _emit(TagFields(fields, rawText: result.rawText, uid: uid, rawBytes: raw));
+      _emit(
+          TagFields(fields, rawText: result.rawText, uid: uid, rawBytes: raw));
     } else {
       _emit(TagReadFailed(
         result.error ?? 'Unreadable tag.',
@@ -476,7 +479,8 @@ class PcscBackend implements NfcBackend {
     final profile = _profile;
     final name = _readerName;
     if (profile == null || name == null || !_wasPresent) {
-      return const NfcWriteResult.failure('No tag on the reader. Place a tag first.');
+      return const NfcWriteResult.failure(
+          'No tag on the reader. Place a tag first.');
     }
 
     final List<int> message;

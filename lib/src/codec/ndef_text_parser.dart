@@ -71,8 +71,12 @@ class NdefTextParser {
     final n = payload.length;
     // MB | ME | TNF=well-known, 4-byte payload length
     return [
-      0xC1, 0x01,
-      (n >> 24) & 0xFF, (n >> 16) & 0xFF, (n >> 8) & 0xFF, n & 0xFF,
+      0xC1,
+      0x01,
+      (n >> 24) & 0xFF,
+      (n >> 16) & 0xFF,
+      (n >> 8) & 0xFF,
+      n & 0xFF,
       _textType,
       ...payload,
     ];

@@ -30,7 +30,10 @@ void main() {
     final data = <String, Object?>{
       'ind': '2',
       'name': 'आशा',
-      'pass': {'zone': 'A', 'days': [1, 2, 3]},
+      'pass': {
+        'zone': 'A',
+        'days': [1, 2, 3]
+      },
     };
     final message = codec.encode(data);
     expect(codec.decode(message).fields, data);

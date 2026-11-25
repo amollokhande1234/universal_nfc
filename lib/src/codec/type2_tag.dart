@@ -20,7 +20,8 @@ class Type2Capability {
     if (cc.length < 4 || cc[0] != 0xE1) return null;
     final size = cc[2] * 8;
     if (size == 0) return null;
-    return Type2Capability(version: cc[1], dataAreaBytes: size, accessByte: cc[3]);
+    return Type2Capability(
+        version: cc[1], dataAreaBytes: size, accessByte: cc[3]);
   }
 }
 

@@ -5,8 +5,10 @@ description: >-
   Android, iOS, macOS and Linux planned behind the same API. Typed tag models,
   nested JSON data, card UID, safe writing and built-in diagnostics.
 version: 0.3.0
-publish_to: none # remove this line to publish on pub.dev
+publish_to: https://pub.dev
 
+homepage: https://github.com/amollokhande1234/universal_nfc
+repository: https://github.com/amollokhande1234/universal_nfc
 environment:
   sdk: ^3.3.0
 

@@ -59,5 +59,6 @@ extension NfcDataAccess on Map<String, Object?> {
       str(key) ?? (throw FormatException('Missing or invalid text "$key"'));
 
   int requireInt(String key) =>
-      integer(key) ?? (throw FormatException('Missing or invalid number "$key"'));
+      integer(key) ??
+      (throw FormatException('Missing or invalid number "$key"'));
 }

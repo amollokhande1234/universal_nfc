@@ -22,7 +22,8 @@ class NfcModelRegistry {
     } else if (replace) {
       _models[i] = model;
     } else {
-      throw ArgumentError('A model with id "${model.id}" is already registered.');
+      throw ArgumentError(
+          'A model with id "${model.id}" is already registered.');
     }
   }
 

@@ -27,7 +27,8 @@ class NdefJsonCodec extends NfcTagCodec {
   @override
   List<int> encode(NfcData data) {
     if (data.isEmpty) throw ArgumentError('Nothing to write: data is empty.');
-    return NdefTextParser.encodeTextRecord(jsonEncode(data), language: language);
+    return NdefTextParser.encodeTextRecord(jsonEncode(data),
+        language: language);
   }
 
   /// JSON text -> data. Public so platform backends that already receive the

@@ -1,6 +1,7 @@
 /// Outcome of writing a tag.
 class NfcWriteResult {
-  const NfcWriteResult.success({required this.bytesUsed, required this.capacity})
+  const NfcWriteResult.success(
+      {required this.bytesUsed, required this.capacity})
       : ok = true,
         error = null;
 

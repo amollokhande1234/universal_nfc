@@ -18,9 +18,12 @@ List<int> blank(int size) => List<int>.filled(size, 0);
 void main() {
   group('capability container', () {
     test('NTAG213 / 215 / 216 sizes', () {
-      expect(Type2Capability.parse([0xE1, 0x10, 0x12, 0x00])!.dataAreaBytes, 144);
-      expect(Type2Capability.parse([0xE1, 0x10, 0x3E, 0x00])!.dataAreaBytes, 496);
-      expect(Type2Capability.parse([0xE1, 0x10, 0x6D, 0x00])!.dataAreaBytes, 872);
+      expect(
+          Type2Capability.parse([0xE1, 0x10, 0x12, 0x00])!.dataAreaBytes, 144);
+      expect(
+          Type2Capability.parse([0xE1, 0x10, 0x3E, 0x00])!.dataAreaBytes, 496);
+      expect(
+          Type2Capability.parse([0xE1, 0x10, 0x6D, 0x00])!.dataAreaBytes, 872);
     });
 
     test('not NDEF formatted', () {
@@ -30,7 +33,8 @@ void main() {
 
     test('write access flag', () {
       expect(Type2Capability.parse([0xE1, 0x10, 0x12, 0x00])!.writable, isTrue);
-      expect(Type2Capability.parse([0xE1, 0x10, 0x12, 0x0F])!.writable, isFalse);
+      expect(
+          Type2Capability.parse([0xE1, 0x10, 0x12, 0x0F])!.writable, isFalse);
     });
   });
 
@@ -71,7 +75,8 @@ void main() {
     test('blank NTAG213: writes, page aligned, decodes back', () {
       final mem = blank(144);
       final msg = codec.encode({'ind': '2', 'sub': '1'});
-      final plan = Type2Layout.plan(memory: mem, message: msg, dataAreaBytes: 144);
+      final plan =
+          Type2Layout.plan(memory: mem, message: msg, dataAreaBytes: 144);
 
       expect(plan.bytes.length % 4, 0);
       expect(plan.startPage, 0);
@@ -82,7 +87,8 @@ void main() {
     test('keeps the Lock Control TLV in front of the message', () {
       final mem = blank(144)..setRange(0, 5, [0x01, 0x03, 0xA0, 0x0C, 0x34]);
       final msg = codec.encode({'ind': '2', 'sub': '1'});
-      final plan = Type2Layout.plan(memory: mem, message: msg, dataAreaBytes: 144);
+      final plan =
+          Type2Layout.plan(memory: mem, message: msg, dataAreaBytes: 144);
       final after = apply(mem, plan);
 
       expect(plan.startPage, 1); // page 0 holds bytes before the NDEF TLV
@@ -93,7 +99,8 @@ void main() {
     test('replaces an existing, longer message', () {
       final mem = blank(144);
       final long = codec.encode({'text': 'a' * 60});
-      final first = Type2Layout.plan(memory: mem, message: long, dataAreaBytes: 144);
+      final first =
+          Type2Layout.plan(memory: mem, message: long, dataAreaBytes: 144);
       final written = apply(mem, first);
 
       final short = codec.encode({'x': '1'});
@@ -105,7 +112,8 @@ void main() {
     test('refuses data that does not fit, with a clear message', () {
       final msg = codec.encode({'text': 'a' * 200});
       expect(
-        () => Type2Layout.plan(memory: blank(144), message: msg, dataAreaBytes: 144),
+        () => Type2Layout.plan(
+            memory: blank(144), message: msg, dataAreaBytes: 144),
         throwsA(isA<Type2WriteException>()
             .having((e) => e.message, 'message', contains('Use less data'))),
       );
@@ -113,15 +121,16 @@ void main() {
 
     test('same data fits a bigger tag', () {
       final msg = codec.encode({'text': 'a' * 200});
-      final plan =
-          Type2Layout.plan(memory: blank(496), message: msg, dataAreaBytes: 496);
+      final plan = Type2Layout.plan(
+          memory: blank(496), message: msg, dataAreaBytes: 496);
       expect(plan.capacity, 496);
       expect(plan.usedBytes, lessThanOrEqualTo(496));
     });
 
     test('never plans a write outside the data area', () {
       final msg = codec.encode({'ind': '2'});
-      final plan = Type2Layout.plan(memory: blank(144), message: msg, dataAreaBytes: 144);
+      final plan = Type2Layout.plan(
+          memory: blank(144), message: msg, dataAreaBytes: 144);
       expect(plan.startPage * 4 + plan.bytes.length, lessThanOrEqualTo(144));
     });
   });

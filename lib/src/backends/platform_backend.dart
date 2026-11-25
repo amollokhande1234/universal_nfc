@@ -38,13 +38,15 @@ NfcBackend createPlatformBackend({
   if (Platform.isMacOS) {
     return UnimplementedBackend(
       platform: 'macOS',
-      hint: 'Planned: macOS has PC/SC built in; a PC/SC backend for macOS is next.',
+      hint:
+          'Planned: macOS has PC/SC built in; a PC/SC backend for macOS is next.',
     );
   }
   if (Platform.isLinux) {
     return UnimplementedBackend(
       platform: 'Linux',
-      hint: 'Planned: needs the pcscd service and libpcsclite; a PC/SC backend for Linux is next.',
+      hint:
+          'Planned: needs the pcscd service and libpcsclite; a PC/SC backend for Linux is next.',
     );
   }
   return UnimplementedBackend(

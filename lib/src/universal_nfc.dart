@@ -139,7 +139,8 @@ class UniversalNfc {
   /// Approximate bytes [data] needs on an NFC Forum Type 2 tag (NTAG / Ultralight),
   /// including NDEF framing. Compare with the tag's capacity: NTAG213 = 144,
   /// NTAG215 = 496, NTAG216 = 872. Throws if [data] cannot be encoded.
-  int estimateSize(NfcData data) => Type2Layout.wrapTlv(_codec.encode(data)).length;
+  int estimateSize(NfcData data) =>
+      Type2Layout.wrapTlv(_codec.encode(data)).length;
 
   /// Writes [data] to the tag that is on the reader now. Pass [modelId] to
   /// store the model name on the tag so it is selected explicitly later.
@@ -200,9 +201,19 @@ class UniversalNfc {
       case TagArrived():
         _emit(const TagDetected());
         _setState(NfcReaderState.tagPresent);
-      case TagFields(:final fields, :final rawText, :final uid, :final rawBytes):
+      case TagFields(
+          :final fields,
+          :final rawText,
+          :final uid,
+          :final rawBytes
+        ):
         _resolve(fields, rawText, uid, rawBytes);
-      case TagReadFailed(:final error, :final rawText, :final uid, :final rawBytes):
+      case TagReadFailed(
+          :final error,
+          :final rawText,
+          :final uid,
+          :final rawBytes
+        ):
         _emit(TagUnreadable(
           error,
           rawText: rawText,

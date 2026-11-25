@@ -5,8 +5,10 @@ void main() {
   test('matches reader names case-insensitively', () {
     expect(ReaderProfile.acr1552.matches('ACS ACR1552 3S CL Reader 0'), isTrue);
     expect(ReaderProfile.acr1552.matches('acs acr1552 reader'), isTrue);
-    expect(ReaderProfile.acr1552.matches('ACS ACR122U PICC Interface 0'), isFalse);
-    expect(ReaderProfile.acr122u.matches('ACS ACR122U PICC Interface 0'), isTrue);
+    expect(
+        ReaderProfile.acr1552.matches('ACS ACR122U PICC Interface 0'), isFalse);
+    expect(
+        ReaderProfile.acr122u.matches('ACS ACR122U PICC Interface 0'), isTrue);
   });
 
   test('generic matches anything', () {
