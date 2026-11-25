@@ -1,0 +1,23 @@
+name: universal_nfc
+description: >-
+  One API to read and write NFC tags from a desktop or mobile app. Works with
+  any PC/SC reader on Windows today (ACR1552, ACR1252, ACR122U, ...), with
+  Android, iOS, macOS and Linux planned behind the same API. Typed tag models,
+  nested JSON data, card UID, safe writing and built-in diagnostics.
+version: 0.3.0
+publish_to: none # remove this line to publish on pub.dev
+
+environment:
+  sdk: ^3.3.0
+
+dependencies:
+  ffi: ^2.1.0
+  # Use the SAME win32 version your app already uses, so the SCard* signatures match.
+  win32: ^5.5.0
+
+dev_dependencies:
+  lints: ^4.0.0
+  test: ^1.25.0
+
+platforms:
+  windows:
