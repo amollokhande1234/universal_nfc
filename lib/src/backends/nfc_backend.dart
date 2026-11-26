@@ -1,5 +1,6 @@
 import '../models/nfc_data.dart';
 import '../models/nfc_diagnostics.dart';
+import '../models/nfc_probe_status.dart';
 import '../models/nfc_write_result.dart';
 
 /// Low-level events a backend reports. [UniversalNfc] turns them into the
@@ -45,6 +46,12 @@ final class TagReadFailed extends BackendEvent {
 
 final class TagLeft extends BackendEvent {
   const TagLeft();
+}
+
+/// The reader probe's answer changed (or was checked for the first time).
+final class ProbeUpdated extends BackendEvent {
+  const ProbeUpdated(this.status);
+  final ProbeStatus status;
 }
 
 final class BackendFailure extends BackendEvent {

@@ -9,6 +9,8 @@ import 'codec/type2_tag.dart';
 import 'models/nfc_data.dart';
 import 'models/nfc_diagnostics.dart';
 import 'models/nfc_event.dart';
+import 'models/nfc_probe_config.dart';
+import 'models/nfc_probe_status.dart';
 import 'models/nfc_model_registry.dart';
 import 'models/nfc_tag_model.dart';
 import 'models/nfc_write_result.dart';
@@ -37,6 +39,7 @@ class UniversalNfc {
     NfcTagCodec codec = const NdefJsonCodec(),
     List<ReaderProfile> readerProfiles = ReaderProfile.defaults,
     bool allowAnyReader = true,
+    NfcProbeConfig probe = const NfcProbeConfig(),
     NfcLogger? logger,
   })  : models = NfcModelRegistry(modelKey: modelKey),
         _codec = codec,
@@ -49,6 +52,7 @@ class UniversalNfc {
           codec: codec,
           readerProfiles: readerProfiles,
           allowAnyReader: allowAnyReader,
+          probe: probe,
           logger: logger,
         );
   }
@@ -64,6 +68,7 @@ class UniversalNfc {
 
   NfcReaderState _state = NfcReaderState.idle;
   String? _readerName;
+  ProbeStatus _probeStatus = ProbeStatus.unknown;
 
   /// Everything that happens: reader connected/disconnected, tag detected/read/
   /// removed/written, state changes, failures. Broadcast stream.
@@ -73,6 +78,26 @@ class UniversalNfc {
   Stream<NfcReaderState> get states => events
       .where((e) => e is NfcStateChanged)
       .map((e) => (e as NfcStateChanged).state);
+
+  /// Latest answer of the fast reader probe (see [ProbeStatus]).
+  ProbeStatus get probeStatus => _probeStatus;
+
+  /// Only the probe status changes.
+  Stream<ProbeStatus> get probeStatuses => events
+      .where((e) => e is ReaderProbeChanged)
+      .map((e) => (e as ReaderProbeChanged).status);
+
+  /// Changes how often the reader probe runs, while the app is running:
+  /// `NfcProbeConfig.milliseconds(100)`, `.seconds(2)` or `.off()`.
+  /// Returns false when the backend has no probe to change.
+  bool setProbe(NfcProbeConfig config) {
+    final Object backend = _backend; // promotion works from Object to any type
+    if (backend is ProbeConfigurable) {
+      backend.updateProbe(config);
+      return true;
+    }
+    return false;
+  }
 
   NfcReaderState get state => _state;
 
@@ -223,6 +248,9 @@ class UniversalNfc {
       case TagLeft():
         _emit(const TagRemoved());
         _setState(_idleState);
+      case ProbeUpdated(:final status):
+        _probeStatus = status;
+        _emit(ReaderProbeChanged(status));
       case BackendFailure(:final error, :final stackTrace):
         _emit(NfcFailure(error, stackTrace));
     }

@@ -11,10 +11,13 @@ import '../../codec/nfc_tag_codec.dart';
 import '../../codec/type2_tag.dart';
 import '../../models/nfc_data.dart';
 import '../../models/nfc_diagnostics.dart';
+import '../../models/nfc_probe_config.dart';
+import '../../models/nfc_probe_status.dart';
 import '../../models/nfc_reader_exception.dart';
 import '../../models/nfc_write_result.dart';
 import '../../nfc_logger.dart';
 import '../nfc_backend.dart';
+import 'nfc_reader_probe.dart';
 import 'reader_profile.dart';
 
 /// Windows backend: any PC/SC reader (ACR1552, ACR1252, ACR122U, ...) through
@@ -23,7 +26,7 @@ import 'reader_profile.dart';
 /// * Plugging a reader in / out while running is detected (hot-plug).
 /// * The reader model decides which [ReaderProfile] is used.
 /// * Reads and writes NFC Forum Type 2 tags (NTAG21x, MIFARE Ultralight).
-class PcscBackend implements NfcBackend {
+class PcscBackend implements NfcBackend, ProbeConfigurable {
   PcscBackend({
     required this.codec,
     this.profiles = ReaderProfile.defaults,
@@ -31,8 +34,16 @@ class PcscBackend implements NfcBackend {
     this.pollInterval = const Duration(milliseconds: 250),
     this.readerScanInterval = const Duration(seconds: 1),
     this.removalDebounce = const Duration(milliseconds: 400),
+    NfcProbeConfig probe = const NfcProbeConfig(),
+    @Deprecated('Use probe: NfcProbeConfig.milliseconds(...) instead.')
+    Duration? probeInterval,
+    ProbeStatus Function()? probeCheck,
+    @Deprecated('Use probeCheck instead.') bool Function()? readerProbe,
     this.logger,
-  }) {
+  })  : _probeConfig = probeInterval == null
+            ? probe
+            : NfcProbeConfig(interval: probeInterval),
+        _probeCheck = probeCheck ?? _wrapBoolProbe(readerProbe) {
     if (!Platform.isWindows) {
       throw UnsupportedError('PcscBackend only works on Windows.');
     }
@@ -56,6 +67,20 @@ class PcscBackend implements NfcBackend {
   /// A tag must be gone this long before [TagLeft] is emitted.
   final Duration removalDebounce;
 
+  NfcProbeConfig _probeConfig;
+
+  /// The fast check itself. Defaults to [NfcReaderProbe.check]; replace it to
+  /// test or to use another detection method.
+  final ProbeStatus Function() _probeCheck;
+
+  /// Current probe settings (interval, on/off). Change with [updateProbe].
+  NfcProbeConfig get probe => _probeConfig;
+
+  static ProbeStatus Function() _wrapBoolProbe(bool Function()? f) {
+    if (f == null) return NfcReaderProbe.check;
+    return () => f() ? ProbeStatus.readerPresent : ProbeStatus.noReader;
+  }
+
   final NfcLogger? logger;
 
   final _controller = StreamController<BackendEvent>.broadcast();
@@ -69,6 +94,8 @@ class PcscBackend implements NfcBackend {
   int _listFailures = 0;
   int? _lastContextError;
   Timer? _timer;
+  Timer? _probeTimer;
+  ProbeStatus? _lastProbe;
   Timer? _removalTimer;
 
   @override
@@ -189,6 +216,7 @@ class PcscBackend implements NfcBackend {
       readers: readers,
       selectedReader: match?.name,
       selectedProfile: match?.profile.id,
+      probeStatus: _probeCheck(),
       notes: notes,
     );
   }
@@ -197,14 +225,38 @@ class PcscBackend implements NfcBackend {
   Future<void> start() async {
     if (_disposed) throw StateError('PcscBackend is disposed.');
     if (_timer != null) return;
+    _lastProbe = null;
     _scan(); // find an already-plugged reader right away
     _timer = Timer.periodic(pollInterval, (_) => _tick());
+    _startProbeTimer();
+    if (_probeConfig.enabled) _probe(initial: true); // report the first status
+  }
+
+  /// Changes the probe while running: interval in seconds or milliseconds, or off.
+  @override
+  void updateProbe(NfcProbeConfig config) {
+    _probeConfig = config;
+    _log('Probe set to $config');
+    if (_timer != null) _startProbeTimer();
+  }
+
+  void _startProbeTimer() {
+    _probeTimer?.cancel();
+    _probeTimer = null;
+    if (!_probeConfig.enabled) return;
+    _probeTimer = Timer.periodic(
+      _probeConfig.effectiveInterval,
+      (_) => _probe(),
+    );
   }
 
   @override
   Future<void> stop() async {
     _timer?.cancel();
     _timer = null;
+    _probeTimer?.cancel();
+    _probeTimer = null;
+    _lastProbe = null;
     _removalTimer?.cancel();
     _removalTimer = null;
     _readerName = null;
@@ -222,6 +274,26 @@ class PcscBackend implements NfcBackend {
   }
 
   // ---------------------------------------------------------------- reader watching
+
+  /// Fast reader plug / unplug detection: when the probe's answer changes,
+  /// report it and rescan right now instead of waiting for the next regular scan.
+  void _probe({bool initial = false}) {
+    if (_disposed || _timer == null) return;
+    final status = _probeCheck();
+    if (status == _lastProbe) return;
+    _lastProbe = status;
+    _log('Probe: ${status.name}');
+    _emit(ProbeUpdated(status));
+    if (initial) return; // _scan() already ran in start()
+
+    if (status == ProbeStatus.serviceUnavailable) {
+      // The service is gone: drop the reader and the stale PC/SC context.
+      _detach();
+      _releaseContext();
+    } else {
+      _scan();
+    }
+  }
 
   void _tick() {
     if (_disposed) return;

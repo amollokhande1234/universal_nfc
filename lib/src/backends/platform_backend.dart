@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 
 import '../codec/nfc_tag_codec.dart';
+import '../models/nfc_probe_config.dart';
 import '../nfc_logger.dart';
 import 'nfc_backend.dart';
 import 'pcsc/pcsc_backend.dart';
@@ -13,6 +14,7 @@ NfcBackend createPlatformBackend({
   required NfcTagCodec codec,
   required List<ReaderProfile> readerProfiles,
   required bool allowAnyReader,
+  NfcProbeConfig probe = const NfcProbeConfig(),
   NfcLogger? logger,
 }) {
   if (Platform.isWindows) {
@@ -20,6 +22,7 @@ NfcBackend createPlatformBackend({
       codec: codec,
       profiles: readerProfiles,
       allowAnyReader: allowAnyReader,
+      probe: probe,
       logger: logger,
     );
   }

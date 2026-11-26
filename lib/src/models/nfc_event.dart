@@ -1,5 +1,6 @@
 import '../codec/hex.dart';
 import 'nfc_data.dart';
+import 'nfc_probe_status.dart';
 import 'nfc_tag_model.dart';
 
 /// Overall state of the reader, for showing status in the UI.
@@ -60,6 +61,14 @@ final class ReaderDisconnected extends NfcEvent {
   final String readerName;
   @override
   String toString() => 'ReaderDisconnected($readerName)';
+}
+
+/// The reader probe's answer changed: reader present, no reader, service down...
+final class ReaderProbeChanged extends NfcEvent {
+  const ReaderProbeChanged(this.status);
+  final ProbeStatus status;
+  @override
+  String toString() => 'ReaderProbeChanged($status)';
 }
 
 /// A tag touched the reader; reading has started.

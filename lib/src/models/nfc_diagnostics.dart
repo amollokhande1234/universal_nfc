@@ -1,3 +1,5 @@
+import 'nfc_probe_status.dart';
+
 /// A health report for NFC on this machine. Show it in a settings screen or
 /// print it when something does not work.
 class NfcDiagnostics {
@@ -8,6 +10,7 @@ class NfcDiagnostics {
     this.readers = const [],
     this.selectedReader,
     this.selectedProfile,
+    this.probeStatus,
     this.notes = const [],
   });
 
@@ -29,6 +32,9 @@ class NfcDiagnostics {
   /// The reader profile that would be applied.
   final String? selectedProfile;
 
+  /// Result of the fast reader probe at the time of the report.
+  final ProbeStatus? probeStatus;
+
   /// What is wrong and how to fix it, in plain words.
   final List<String> notes;
 
@@ -44,6 +50,7 @@ class NfcDiagnostics {
           'Readers found      : ${readers.isEmpty ? 'none' : readers.join(' | ')}')
       ..writeln('Selected reader    : ${selectedReader ?? '-'}')
       ..writeln('Reader profile     : ${selectedProfile ?? '-'}')
+      ..writeln('Probe status       : ${probeStatus?.name ?? '-'}')
       ..writeln('Healthy            : ${healthy ? 'yes' : 'no'}');
     for (final n in notes) {
       b.writeln('  - $n');
